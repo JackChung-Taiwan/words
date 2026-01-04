@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>聽力對戰（1-5人版）</title>
+<title>聽力對戰（含Logo版）</title>
 
 <style>
 :root{
@@ -45,6 +45,18 @@ body{
   padding:12px;
   align-items:center;
   flex-wrap:wrap;
+}
+
+/* 新增 Logo 樣式 */
+.topbar-logo {
+  height: 80px; /* 設定高度，寬度自動 */
+  width: auto;
+  object-fit: contain;
+  display: block;
+  /* 在手機上稍微縮小以節省空間 */
+  @media (max-width: 600px) {
+    height: 60px;
+  }
 }
 
 /* 題目區 */
@@ -310,8 +322,10 @@ body{
 <div class="app">
 
   <div class="comic-box topbar">
-    <div class="question-zone" id="btnSpeak" title="播放發音">
-      <div id="displayArea" class="listen-hint">播放發音</div>
+    <img src="image_0.png" alt="KEAT Logo" class="topbar-logo">
+
+    <div class="question-zone" id="btnSpeak" title="點擊播放發音">
+      <div id="displayArea" class="listen-hint">點擊播放發音</div>
       <button id="btnEye" aria-label="toggle word"
         style="position:absolute; right:10px; top:10px; border:2px solid #000; border-radius:10px; background:#fff; font-weight:900; padding:6px 10px; cursor:pointer;">
         顯示/隱藏
@@ -339,7 +353,7 @@ body{
       <select id="autoSelect">
         <option value="off">關閉</option>
         <option value="correct">答對就下一題</option>
-        <option value="all" selected>全員答對換下一題</option>
+        <option value="all" selected>全員作答就下一題</option>
       </select>
     </div>
 
@@ -667,7 +681,7 @@ function updateUI(){
     display.textContent = q.answer;
   }else{
     display.className = "listen-hint";
-    display.textContent = "播放發音";
+    display.textContent = "點擊播放發音";
   }
 
   for(let t=0;t<teamCount;t++){
