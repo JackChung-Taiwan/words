@@ -839,6 +839,60 @@ document.getElementById("btnRestart").onclick = ()=>{
 updateBankCount();
 initGame();
 </script>
+
+<script>
+/* ====== Right-click disable + shortcut block + DevTools overlay (deterrent, not foolproof) ====== */
+
+// 1) Disable context menu (right click / long press)
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}, {capture:true});
+
+// 2) Block common "view source / devtools" shortcuts
+document.addEventListener("keydown", (e) => {
+  const k = (e.key || "").toLowerCase();
+
+  // F12
+  if (e.key === "F12") { e.preventDefault(); e.stopPropagation(); return; }
+
+  // Ctrl+Shift+I / J / C (DevTools)
+  if (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) { e.preventDefault(); e.stopPropagation(); return; }
+
+  // Ctrl+U (View Source), Ctrl+S (Save), Ctrl+P (Print)
+  if (e.ctrlKey && ["u","s","p"].includes(k)) { e.preventDefault(); e.stopPropagation(); return; }
+
+  // Cmd equivalents on macOS
+  if (e.metaKey && ["u","s","p"].includes(k)) { e.preventDefault(); e.stopPropagation(); return; }
+}, {capture:true});
+
+// 3) Detect docked DevTools (size delta heuristic) and cover UI
+(function(){
+  const blockerId = "devtools-blocker";
+  let blocker = document.getElementById(blockerId);
+  if(!blocker){
+    blocker = document.createElement("div");
+    blocker.id = blockerId;
+    blocker.style.cssText = [
+      "position:fixed","inset:0","z-index:999999",
+      "display:none","align-items:center","justify-content:center",
+      "background:rgba(0,0,0,.92)","color:#fff","text-align:center",
+      "padding:24px","font:800 20px/1.4 system-ui,'Microsoft JhengHei',sans-serif"
+    ].join(";");
+    blocker.innerHTML = "偵測到開發者工具已開啟<br>請關閉後再繼續使用";
+    document.body.appendChild(blocker);
+  }
+
+  const THRESHOLD = 160; // sensitivity
+  setInterval(() => {
+    const opened = (window.outerWidth - window.innerWidth > THRESHOLD) ||
+                   (window.outerHeight - window.innerHeight > THRESHOLD);
+    blocker.style.display = opened ? "flex" : "none";
+  }, 600);
+})();
+</script>
+
 </body>
 </html>
 
