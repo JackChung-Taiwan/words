@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>聽力對戰（含Logo版）</title>
+<title>聽力對戰（無限嘗試+大讚賞版）</title>
 
 <style>
 :root{
@@ -47,13 +47,12 @@ body{
   flex-wrap:wrap;
 }
 
-/* 新增 Logo 樣式 */
+/* Logo 樣式 */
 .topbar-logo {
-  height: 80px; /* 設定高度，寬度自動 */
+  height: 80px; 
   width: auto;
   object-fit: contain;
   display: block;
-  /* 在手機上稍微縮小以節省空間 */
   @media (max-width: 600px) {
     height: 60px;
   }
@@ -117,7 +116,6 @@ body{
   min-height:0;
   display:grid;
   gap:15px;
-  /* 根據隊伍數變動列數 */
   grid-template-columns: repeat(var(--cols, 3), 1fr);
 }
 .team-container{
@@ -167,34 +165,57 @@ body{
   align-items:center;
   justify-content:center;
   user-select:none;
+  position: relative; /* 為了放絕對定位的 emoji */
 }
 .option-item:hover{ transform:scale(1.02); }
 .option-word{
-  font-size:26px; /* 稍微調小一點適應5欄 */
+  font-size:26px;
   font-weight:900;
   letter-spacing:0.3px;
   word-break: break-word;
   text-align: center;
+  z-index: 1;
 }
 
-.correct{ background: var(--pop-green) !important; color:#fff !important; }
+/* 👍 大讚 Emoji 動畫 */
+.thumb-emoji {
+  position: absolute;
+  right: 15px;
+  font-size: 45px; /* 變大 */
+  line-height: 1;
+  z-index: 2;
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  60% { transform: scale(1.4) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.correct{ 
+  background: var(--pop-green) !important; 
+  color:#fff !important; 
+  border-color: #14532d !important;
+}
 .wrong{ 
   background: var(--pop-red) !important; 
   color:#fff !important; 
   animation:shake .25s; 
   opacity: 0.6; 
-  pointer-events: none; 
+  pointer-events: none; /* 讓這個按鈕不能再按，但可以按別的 */
 }
 
-/* ✅ 顯示正確答案：亮框 */
+/* 顯示正確答案 */
 .reveal-correct{
   border-color: var(--pop-amber) !important;
   box-shadow: 0 0 0 4px rgba(245,158,11,.35) !important;
 }
 
 .locked{
-  opacity:0.58;
-  filter:grayscale(0.15);
+  opacity:0.6;
+  filter:grayscale(0.1);
   pointer-events:none;
 }
 .lock-badge{
@@ -213,7 +234,7 @@ body{
   75%{ transform:translateX(6px); }
 }
 
-/* 共用彈窗 */
+/* 彈窗 */
 .overlay{
   position:fixed;
   inset:0;
@@ -255,7 +276,7 @@ body{
   padding:6px 10px;
 }
 
-/* 結果榜單 */
+/* 排行榜 */
 .podium{
   display:flex;
   flex-direction:column;
@@ -309,11 +330,11 @@ body{
   line-height:1.6;
 }
 
-/* 手機：自動 1 欄 */
+/* 手機適配 */
 @media (max-width: 900px){
   .battle-ground{ grid-template-columns: 1fr !important; overflow:auto; }
   body{ overflow:auto; }
-  .option-word{ font-size: 30px; } /* 手機版字可以大一點 */
+  .option-word{ font-size: 30px; }
 }
 </style>
 </head>
@@ -324,8 +345,8 @@ body{
   <div class="comic-box topbar">
     <img src="image_0.png" alt="KEAT Logo" class="topbar-logo">
 
-    <div class="question-zone" id="btnSpeak" title="點擊播放發音">
-      <div id="displayArea" class="listen-hint">點擊播放發音</div>
+    <div class="question-zone" id="btnSpeak" title="播放發音">
+      <div id="displayArea" class="listen-hint">播放發音</div>
       <button id="btnEye" aria-label="toggle word"
         style="position:absolute; right:10px; top:10px; border:2px solid #000; border-radius:10px; background:#fff; font-weight:900; padding:6px 10px; cursor:pointer;">
         顯示/隱藏
@@ -353,7 +374,7 @@ body{
       <select id="autoSelect">
         <option value="off">關閉</option>
         <option value="correct">答對就下一題</option>
-        <option value="all" selected>全員作答就下一題</option>
+        <option value="all" selected>全員答對換下一題</option>
       </select>
     </div>
 
@@ -385,8 +406,8 @@ body{
     </div>
 
     <div style="margin-top:10px; font-size:14px; font-weight:900; color:#334155;">
-      規則：每題第 1 個答對 +10、第 2 個 +8、第 3 個 +6、第 4 個 +4、第 5 個 +2。<br>
-      <span style="color:#ef4444;">新規則：答錯可繼續選（扣2分），但之後選對不加分（僅算完成）。</span>
+      規則：答對者依序獲得 +10、+8...<br>
+      <span style="color:#22c55e;">選錯不扣分，修正後選對依然有分！</span>
     </div>
   </div>
 </div>
@@ -408,9 +429,8 @@ body{
 /* ================== 參數 ================== */
 let TOTAL_QUESTIONS = 4;
 const OPTIONS_PER_QUESTION = 4;
-// 擴充到支援5組的分數
 const RACE_POINTS = [10, 8, 6, 4, 2]; 
-const AUTO_DELAY_MS = 900;
+const AUTO_DELAY_MS = 1500; // 延遲長一點點讓大家看到讚
 
 /* ================== 題庫 ================== */
 const DEFAULT_WORDS = ["Apple","Banana","Cat","Dog","Car","Fish","Sun","Moon","Book","Bird","Lion","Milk","Tree","Water","Fire"];
@@ -418,19 +438,15 @@ let MASTER_WORDS = [...DEFAULT_WORDS];
 
 /* ================== 狀態 ================== */
 let teamCount = 3;
-// 預設支援到5組
 let teamScores = [0,0,0,0,0];
 let gameBank = [];
 let currentIdx = 0;
 let isShowWord = false;
 let gameEnded = false;
 
-// 本題搶答名次
 let correctRank = 0;
-
-// 每題：哪些隊已「完成」（答對才算完成並鎖定）
 let answeredTeams = new Set();
-// 每題：哪些隊已經「失誤過」（失誤過的人答對不加分）
+// missedTeams 用來記錄是否有答錯過，但這版本不再影響獲得分數，僅供參考或擴充用
 let missedTeams = new Set();
 
 let autoMode = "all"; 
@@ -477,7 +493,7 @@ function lockTeam(teamIdx){
     const badge = document.createElement("span");
     badge.className = "lock-badge";
     badge.setAttribute("data-lock", String(teamIdx));
-    badge.textContent = "已作答";
+    badge.textContent = "完成";
     header.appendChild(badge);
   }
 }
@@ -502,7 +518,6 @@ function speak(text){
   if(!target) return;
 
   const u = new SpeechSynthesisUtterance(target);
-  // 簡單判斷中英文
   u.lang = /^[A-Za-z0-9\s]+$/.test(target) ? "en-US" : "zh-TW";
   u.rate = 0.9;
   speechSynthesis.speak(u);
@@ -542,7 +557,7 @@ function revealCorrectAnswer(){
     if(!list) continue;
     const items = Array.from(list.querySelectorAll(".option-item"));
     for(const it of items){
-      const txt = (it.textContent || "").trim();
+      const txt = (it.querySelector('.option-word')?.textContent || "").trim();
       if(txt.toLowerCase() === q.answer.toLowerCase()){
         it.classList.add("reveal-correct");
       }
@@ -592,14 +607,11 @@ function showResults(){
   const labelByRank = {1:"第一名",2:"第二名",3:"第三名",4:"第四名",5:"第五名"};
 
   podium.innerHTML = "";
-  // 顯示所有隊伍
-  const allowedRanks = new Set([1,2,3,4,5]);
-
   for(let i=0;i<standings.length;i++){
     const r = ranks[i];
     const s = standings[i];
     const tied = (i>0 && ranks[i]===ranks[i-1] && standings[i].score===standings[i-1].score)
-              || standings.some((x, idx)=> idx!==i && ranks[idx]===r && x.score===s.score);
+               || standings.some((x, idx)=> idx!==i && ranks[idx]===r && x.score===s.score);
     const label = (labelByRank[r] || `第${r}名`) + (tied ? " (並列)" : "");
 
     const item = document.createElement("div");
@@ -622,7 +634,7 @@ function showResults(){
     podium.appendChild(item);
   }
 
-  allScores.innerHTML = ""; // 已整合進榜單，清空下方文字以免重複
+  allScores.innerHTML = "";
   overlay.style.display = "flex";
 }
 
@@ -641,7 +653,6 @@ function renderBattleGround(){
   bg.innerHTML = "";
   setCols(teamCount);
 
-  // 擴充到5組顏色
   const teamBg = ["#fff5f5","#f0f9ff","#f0fdf4","#fdf4ff","#fff7ed"];
   const teamColor = ["#ef4444","#3b82f6","#22c55e","#a855f7","#f97316"];
 
@@ -668,7 +679,7 @@ function updateUI(){
   questionFinalized = false;
 
   answeredTeams = new Set();
-  missedTeams = new Set(); // 重置本題失誤紀錄
+  missedTeams = new Set();
   correctRank = 0;
   clearLocks();
 
@@ -681,7 +692,7 @@ function updateUI(){
     display.textContent = q.answer;
   }else{
     display.className = "listen-hint";
-    display.textContent = "點擊播放發音";
+    display.textContent = "播放發音";
   }
 
   for(let t=0;t<teamCount;t++){
@@ -700,14 +711,12 @@ function updateUI(){
   speak();
 }
 
-/* ================== 作答邏輯（修改處） ================== */
+/* ================== 作答邏輯（核心修正） ================== */
 function checkAnswer(teamIdx, pick, ans, el){
   if(gameEnded) return;
-   
-  // 如果這隊已經「答對並鎖定」，就不動作
+  // 已經完成任務的隊伍不能再按
   if(answeredTeams.has(teamIdx)) return;
-
-  // 如果這個按鈕已經被判定過（已錯或已對），就不動作
+  // 該按鈕已經被判定對或錯，避免重複觸發
   if(el.classList.contains("wrong") || el.classList.contains("correct")) return;
 
   const isCorrect = (pick.toLowerCase() === ans.toLowerCase());
@@ -716,22 +725,27 @@ function checkAnswer(teamIdx, pick, ans, el){
     // === 答對 ===
     el.classList.add("correct");
 
-    // 只有「之前沒選錯過」的人，才有資格拿這題的 Ranking 分數
-    if(!missedTeams.has(teamIdx)){
-      const pts = RACE_POINTS[correctRank] ?? 2; // 超過範圍預設2分
-      correctRank++; // 佔用一個名次
-      teamScores[teamIdx] = (teamScores[teamIdx] || 0) + pts;
-    } else {
-      // 之前錯過，雖然現在對了，但不加 Ranking 分數
-    }
+    // 1. 顯示大大的讚 Emoji
+    const emojiSpan = document.createElement("span");
+    emojiSpan.className = "thumb-emoji";
+    emojiSpan.textContent = "👍";
+    el.appendChild(emojiSpan);
 
+    // 2. 計分邏輯（放寬：即使之前錯過，只要最後對了，依然依順序給分）
+    // 給予該順位(correctRank)的分數，如果超過設定就給最低分2分
+    const pts = RACE_POINTS[correctRank] ?? 2;
+    correctRank++; // 下一隊的名次往後延
+    
+    teamScores[teamIdx] = (teamScores[teamIdx] || 0) + pts;
     document.getElementById(`score-${teamIdx}`).textContent = teamScores[teamIdx];
+    
     speak(ans);
 
-    // 標記這隊已完成 -> 鎖定整隊
+    // 3. 鎖定該隊伍
     answeredTeams.add(teamIdx);
     lockTeam(teamIdx);
 
+    // 4. 自動下一題判斷 (如果是 "correct" 模式)
     if(autoMode === "correct"){
       finalizeQuestionAndMaybeAutoNext();
     }
@@ -739,16 +753,13 @@ function checkAnswer(teamIdx, pick, ans, el){
   }else{
     // === 答錯 ===
     el.classList.add("wrong");
+    // 不扣分、不鎖定隊伍，僅鎖定該選項按鈕
+    // 讓學生可以繼續嘗試其他選項
     
-    // 標記：這隊這題有失誤過，之後答對也不會加分
-    missedTeams.add(teamIdx);
-
-    // 扣分（避免亂按）
-    teamScores[teamIdx] = Math.max(0, (teamScores[teamIdx] || 0) - 2);
-    document.getElementById(`score-${teamIdx}`).textContent = teamScores[teamIdx];
+    missedTeams.add(teamIdx); // 紀錄一下，雖然不影響分數了
   }
 
-  // 檢查是否全員都答對了
+  // 若所有人都答對/完成，自動下一題
   if(autoMode === "all" && answeredTeams.size >= teamCount){
     finalizeQuestionAndMaybeAutoNext();
   }
@@ -766,7 +777,6 @@ document.getElementById("btnEye").onclick = (e)=>{
 document.getElementById("btnNext").onclick = ()=> nextQuestion();
 
 document.getElementById("teamSelect").addEventListener("change", (e)=>{
-  // 限制 1-5 人
   teamCount = Math.max(1, Math.min(5, parseInt(e.target.value,10) || 3));
   renderBattleGround();
   updateUI();
@@ -796,7 +806,9 @@ document.getElementById("btnConfig").onclick = ()=>{
   updateBankCount();
   configOverlay.style.display = "flex";
 };
-document.getElementById("btnCancel").onclick = ()=> configOverlay.style.display = "none";
+document.getElementById("btnCancel").onclick = ()=>{
+  configOverlay.style.display = "none";
+};
 document.getElementById("btnClear").onclick = ()=>{
   MASTER_WORDS = [];
   updateBankCount();
@@ -811,7 +823,6 @@ document.getElementById("btnApply").onclick = ()=>{
     return;
   }
   MASTER_WORDS = clean;
-  // 重置分數，長度為5以防萬一
   teamScores = [0,0,0,0,0];
   configOverlay.style.display = "none";
   initGame();
