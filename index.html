@@ -49,13 +49,13 @@ body{
 
 /* Logo 樣式 */
 .topbar-logo {
-  height: 80px; 
+  height: 80px;
   width: auto;
   object-fit: contain;
   display: block;
-  @media (max-width: 600px) {
-    height: 60px;
-  }
+}
+@media (max-width: 600px) {
+  .topbar-logo { height: 60px; }
 }
 
 /* 題目區 */
@@ -165,7 +165,7 @@ body{
   align-items:center;
   justify-content:center;
   user-select:none;
-  position: relative; /* 為了放絕對定位的 emoji */
+  position: relative;
 }
 .option-item:hover{ transform:scale(1.02); }
 .option-word{
@@ -181,30 +181,29 @@ body{
 .thumb-emoji {
   position: absolute;
   right: 15px;
-  font-size: 45px; /* 變大 */
+  font-size: 45px;
   line-height: 1;
   z-index: 2;
   filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
-
 @keyframes popIn {
   0% { transform: scale(0) rotate(-45deg); opacity: 0; }
   60% { transform: scale(1.4) rotate(10deg); opacity: 1; }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-.correct{ 
-  background: var(--pop-green) !important; 
-  color:#fff !important; 
+.correct{
+  background: var(--pop-green) !important;
+  color:#fff !important;
   border-color: #14532d !important;
 }
-.wrong{ 
-  background: var(--pop-red) !important; 
-  color:#fff !important; 
-  animation:shake .25s; 
-  opacity: 0.6; 
-  pointer-events: none; /* 讓這個按鈕不能再按，但可以按別的 */
+.wrong{
+  background: var(--pop-red) !important;
+  color:#fff !important;
+  animation:shake .25s;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 /* 顯示正確答案 */
@@ -369,27 +368,21 @@ body{
       <select id="roundSelect"></select>
     </div>
 
-
-    <div class="pill" title="選擇單字分類">
-      <label for="categorySelect">分類</label>
-      <select id="categorySelect">
-        <option value="">自訂 / 預設</option>
-      </select>
-    </div>
-
-    <div class="pill" title="題目分類方式">
-      <label for="catModeSelect">模式</label>
-      <select id="catModeSelect">
-        <option value="fixed" selected>固定分類</option>
-        <option value="random">分類隨機</option>
-      </select>
-    </div>
-<div class="pill" title="自動下一題條件">
+    <div class="pill" title="自動下一題條件">
       <label for="autoSelect">自動</label>
       <select id="autoSelect">
         <option value="off">關閉</option>
         <option value="correct">答對就下一題</option>
         <option value="all" selected>全員答對換下一題</option>
+      </select>
+    </div>
+
+    <!-- ✅ NEW: Voice gender switch -->
+    <div class="pill" title="Voice (en-US)">
+      <label for="voiceSelect">Voice</label>
+      <select id="voiceSelect">
+        <option value="female" selected>Female</option>
+        <option value="male">Male</option>
       </select>
     </div>
 
@@ -413,7 +406,8 @@ body{
       <button class="comic-btn" id="btnClear" style="background:#fff;">清空題庫</button>
     </div>
 
-    <textarea id="wordInput" placeholder="貼上單字（用逗號、空白或換行分隔）&#10;例如：Apple Banana Cat Dog"></textarea>
+    <!-- ✅ UPDATED placeholder: phrases supported (keep spaces) -->
+    <textarea id="wordInput" placeholder="貼上單字或片語（支援空白）&#10;一行一題 或 用逗號分隔&#10;例如：&#10;ice cream&#10;take off, look forward to, Apple"></textarea>
 
     <div style="display:flex; gap:10px; margin-top:12px;">
       <button class="comic-btn" id="btnApply" style="flex:1; background:var(--pop-blue); color:#fff;">套用（覆蓋舊題庫）</button>
@@ -444,35 +438,12 @@ body{
 /* ================== 參數 ================== */
 let TOTAL_QUESTIONS = 4;
 const OPTIONS_PER_QUESTION = 4;
-const RACE_POINTS = [10, 8, 6, 4, 2]; 
-const AUTO_DELAY_MS = 1500; // 延遲長一點點讓大家看到讚
-const RANDOM_PICK_COUNT = 40; // 分類隨機時抽取的單字數
-let randomPickedWords = [];
+const RACE_POINTS = [10, 8, 6, 4, 2];
+const AUTO_DELAY_MS = 1500;
 
 /* ================== 題庫 ================== */
-
-/* ================== 分類單字庫 ================== */
-const WORD_CATEGORIES = {
-  "Fruits": ["Apple","Banana","Orange","Grape","Strawberry","Watermelon","Papaya","Mango","Lemon","Peach","Cherry","Pear","Pineapple","Kiwi","Guava","Tomato"],
-  "Body Parts": ["Head","Hair","Eye","Ear","Nose","Mouth","Tooth","Face","Neck","Shoulder","Arm","Hand","Finger","Leg","Knee","Foot","Toe","Body"],
-  "Clothes": ["T-shirt","Shirt","Coat","Jacket","Sweater","Dress","Skirt","Pants","Shorts","Jeans","Hat","Socks","Shoes","Gloves","Scarf","Umbrella"],
-  "Weather": ["Sunny","Cloudy","Rainy","Snowy","Windy","Hot","Cold","Warm","Cool","Rain","Sun","Cloud","Sky","Rainbow","Storm","Foggy"],
-  "Food & Drinks": ["Rice","Bread","Noodles","Egg","Milk","Juice","Water","Tea","Cake","Cookie","Candy","Pizza","Hamburger","Sandwich","Chicken","Fish","Beef","Soup"],
-  "Colors": ["Red","Blue","Yellow","Green","Orange","Purple","Pink","Black","White","Gray","Brown","Gold","Silver","Colorful","Dark","Light"],
-  "Daily Objects": ["Key","Wallet","Bag","Box","Mirror","Comb","Towel","Soap","Toothbrush","Bed","Table","Chair","Door","Window","Pillow"],
-  "Stationery": ["Pen","Pencil","Eraser","Ruler","Paper","Book","Notebook","Glue","Scissors","Marker","Crayon","Desk","Bag","Map","Tape"],
-  "Appliances": ["TV","Phone","Computer","Fan","Lamp","Clock","Radio","Camera","Oven","Fridge"],
-  "Accessories & More": ["Tie","Belt","Ring","Watch","Glasses","Mask","Vest","Boots","Cap","Uniform"]
-};
-
 const DEFAULT_WORDS = ["Apple","Banana","Cat","Dog","Car","Fish","Sun","Moon","Book","Bird","Lion","Milk","Tree","Water","Fire"];
-
 let MASTER_WORDS = [...DEFAULT_WORDS];
-
-/* ================== 分類狀態 ================== */
-let selectedCategory = "";
-let categoryMode = "fixed"; // fixed | random
-
 
 /* ================== 狀態 ================== */
 let teamCount = 3;
@@ -484,12 +455,27 @@ let gameEnded = false;
 
 let correctRank = 0;
 let answeredTeams = new Set();
-// missedTeams 用來記錄是否有答錯過，但這版本不再影響獲得分數，僅供參考或擴充用
 let missedTeams = new Set();
 
-let autoMode = "all"; 
+let autoMode = "all";
 let autoTimer = null;
 let questionFinalized = false;
+
+/* ================== ✅ Voice (en-US only) ================== */
+let voiceGender = "female"; // "male" | "female"
+let cachedVoices = [];
+
+function refreshVoices(){
+  try{
+    cachedVoices = (speechSynthesis.getVoices() || []).filter(v => (v.lang || "").toLowerCase() === "en-us");
+  }catch(e){
+    cachedVoices = [];
+  }
+}
+if ("speechSynthesis" in window) {
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = () => refreshVoices();
+}
 
 /* ================== 工具 ================== */
 function uniq(arr){
@@ -516,19 +502,11 @@ function setCols(n){
   document.getElementById("battleGround").style.setProperty("--cols", String(n));
 }
 function updateBankCount(){
-  const el = document.getElementById("bankCount");
-  if(categoryMode === "random"){
-    const n = (randomPickedWords && randomPickedWords.length) ? randomPickedWords.length : RANDOM_PICK_COUNT;
-    el.textContent = `目前題庫：分類隨機（抽 ${n} 個）`;
-  }else{
-    el.textContent = `目前題庫：${MASTER_WORDS.length}`;
-  }
+  document.getElementById("bankCount").textContent = `目前題庫：${MASTER_WORDS.length}`;
 }
 function updateRoundText(){
   const total = gameBank.length || TOTAL_QUESTIONS;
-  const cat = gameBank[currentIdx]?.category;
-  document.getElementById("roundText").textContent =
-    `Round ${Math.min(currentIdx+1,total)} / ${total}` + (cat ? ` · ${cat}` : "");
+  document.getElementById("roundText").textContent = `Round ${Math.min(currentIdx+1,total)} / ${total}`;
 }
 function lockTeam(teamIdx){
   const list = document.getElementById(`list-${teamIdx}`);
@@ -556,42 +534,48 @@ function clearAutoTimer(){
   if(autoTimer){ clearTimeout(autoTimer); autoTimer = null; }
 }
 
-/* ================== 語音 ================== */
+/* ================== ✅ 語音：只用 en-US + 可切換男/女 ================== */
+function pickVoice(){
+  // Ensure voices available
+  if(!cachedVoices || cachedVoices.length === 0) refreshVoices();
+  const voices = cachedVoices || [];
+  if(voices.length === 0) return null;
+
+  // Heuristic name matching; different browsers expose different voice names
+  const maleHint = /male|man|alex|fred|daniel|david/i;
+  const femaleHint = /female|woman|samantha|victoria|karen|zira|tessa|moira/i;
+
+  let v = null;
+  if(voiceGender === "male"){
+    v = voices.find(x => maleHint.test(x.name || "")) || voices.find(x => !femaleHint.test(x.name || ""));
+  }else{
+    v = voices.find(x => femaleHint.test(x.name || "")) || voices.find(x => !maleHint.test(x.name || ""));
+  }
+  return v || voices[0] || null;
+}
+
 function speak(text){
   if(!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const target = text || gameBank[currentIdx]?.answer || "";
+
+  const target = (text ?? gameBank[currentIdx]?.answer ?? "").toString().trim();
   if(!target) return;
 
   const u = new SpeechSynthesisUtterance(target);
-  u.lang = /^[A-Za-z0-9\s]+$/.test(target) ? "en-US" : "zh-TW";
+  u.lang = "en-US"; // ✅ en-US only
   u.rate = 0.9;
+
+  const v = pickVoice();
+  if(v) u.voice = v;
+
   speechSynthesis.speak(u);
 }
 
 /* ================== 建題 ================== */
 function buildGameBank(){
-  // === 分類隨機模式：先從所有分類合併後，隨機抽出固定題庫（預設 40 個）===
-  if(categoryMode === "random"){
-    let all = [];
-    Object.values(WORD_CATEGORIES || {}).forEach(arr=>{
-      all.push(...(arr || []));
-    });
-    all = uniq(all);
-
-    if(all.length < OPTIONS_PER_QUESTION){
-      alert(`分類題庫不足 ${OPTIONS_PER_QUESTION} 個單字，請先補充分類內容。`);
-      return false;
-    }
-
-    randomPickedWords = shuffle([...all]).slice(0, Math.min(RANDOM_PICK_COUNT, all.length));
-    MASTER_WORDS = [...randomPickedWords];
-  }
-
-  // === 固定分類 / 自訂題庫模式：沿用 MASTER_WORDS ===
   MASTER_WORDS = uniq(MASTER_WORDS);
   if(MASTER_WORDS.length < OPTIONS_PER_QUESTION){
-    alert(`題庫不足 ${OPTIONS_PER_QUESTION} 個單字，請在題庫加入更多單字。`);
+    alert(`題庫不足 ${OPTIONS_PER_QUESTION} 個單字/片語，請在題庫加入更多。`);
     return false;
   }
   const pool = shuffle([...MASTER_WORDS]);
@@ -601,12 +585,11 @@ function buildGameBank(){
   }
   shuffle(answers);
 
-  const catLabel = selectedCategory ? selectedCategory : "自訂";
   gameBank = answers.map(ans=>{
     const others = MASTER_WORDS.filter(w => w.toLowerCase() !== ans.toLowerCase());
     shuffle(others);
     const options = shuffle([ans, ...others.slice(0, OPTIONS_PER_QUESTION-1)]);
-    return { answer: ans, options, category: catLabel };
+    return { answer: ans, options };
   });
 
   shuffle(gameBank);
@@ -681,7 +664,7 @@ function showResults(){
 
     const item = document.createElement("div");
     item.className = "podium-item";
-    
+
     let bgColor = "#f8fafc";
     if(r===1) bgColor = "#fff7ed";
     else if(r===2) bgColor = "#eff6ff";
@@ -776,55 +759,41 @@ function updateUI(){
   speak();
 }
 
-/* ================== 作答邏輯（核心修正） ================== */
+/* ================== 作答邏輯（維持原邏輯） ================== */
 function checkAnswer(teamIdx, pick, ans, el){
   if(gameEnded) return;
-  // 已經完成任務的隊伍不能再按
   if(answeredTeams.has(teamIdx)) return;
-  // 該按鈕已經被判定對或錯，避免重複觸發
   if(el.classList.contains("wrong") || el.classList.contains("correct")) return;
 
   const isCorrect = (pick.toLowerCase() === ans.toLowerCase());
 
   if(isCorrect){
-    // === 答對 ===
     el.classList.add("correct");
 
-    // 1. 顯示大大的讚 Emoji
     const emojiSpan = document.createElement("span");
     emojiSpan.className = "thumb-emoji";
     emojiSpan.textContent = "👍";
     el.appendChild(emojiSpan);
 
-    // 2. 計分邏輯（放寬：即使之前錯過，只要最後對了，依然依順序給分）
-    // 給予該順位(correctRank)的分數，如果超過設定就給最低分2分
     const pts = RACE_POINTS[correctRank] ?? 2;
-    correctRank++; // 下一隊的名次往後延
-    
+    correctRank++;
+
     teamScores[teamIdx] = (teamScores[teamIdx] || 0) + pts;
     document.getElementById(`score-${teamIdx}`).textContent = teamScores[teamIdx];
-    
+
     speak(ans);
 
-    // 3. 鎖定該隊伍
     answeredTeams.add(teamIdx);
     lockTeam(teamIdx);
 
-    // 4. 自動下一題判斷 (如果是 "correct" 模式)
     if(autoMode === "correct"){
       finalizeQuestionAndMaybeAutoNext();
     }
-
   }else{
-    // === 答錯 ===
     el.classList.add("wrong");
-    // 不扣分、不鎖定隊伍，僅鎖定該選項按鈕
-    // 讓學生可以繼續嘗試其他選項
-    
-    missedTeams.add(teamIdx); // 紀錄一下，雖然不影響分數了
+    missedTeams.add(teamIdx);
   }
 
-  // 若所有人都答對/完成，自動下一題
   if(autoMode === "all" && answeredTeams.size >= teamCount){
     finalizeQuestionAndMaybeAutoNext();
   }
@@ -847,59 +816,6 @@ document.getElementById("teamSelect").addEventListener("change", (e)=>{
   updateUI();
 });
 
-/* ================== 分類選擇 / 分類隨機 ================== */
-const categorySelect = document.getElementById("categorySelect");
-const catModeSelect = document.getElementById("catModeSelect");
-
-// 建立分類選項
-(function initCategorySelect(){
-  const cats = Object.keys(WORD_CATEGORIES || {});
-  for(const cat of cats){
-    const opt = document.createElement("option");
-    opt.value = cat;
-    opt.textContent = cat;
-    categorySelect.appendChild(opt);
-  }
-})();
-
-function applyCategoryUIState(){
-  const isRandom = (categoryMode === "random");
-  categorySelect.disabled = isRandom;
-  if(isRandom){
-    categorySelect.value = "";
-    selectedCategory = "";
-  }
-  updateBankCount();
-}
-
-// 固定分類：選到哪一類，就用那一類出題
-categorySelect.addEventListener("change", (e)=>{
-  const cat = e.target.value || "";
-  selectedCategory = cat;
-
-  if(cat && WORD_CATEGORIES[cat]){
-    MASTER_WORDS = [...WORD_CATEGORIES[cat]];
-  }else{
-    // 回到預設（或自訂）
-    MASTER_WORDS = [...DEFAULT_WORDS];
-  }
-
-  categoryMode = "fixed";
-  catModeSelect.value = "fixed";
-  applyCategoryUIState();
-
-  teamScores = [0,0,0,0,0];
-  initGame();
-});
-
-// 分類模式：固定 vs 分類隨機
-catModeSelect.addEventListener("change", (e)=>{
-  categoryMode = e.target.value || "fixed";
-  applyCategoryUIState();
-  teamScores = [0,0,0,0,0];
-  initGame();
-});
-
 const roundSelect = document.getElementById("roundSelect");
 for(let i=4;i<=20;i++){
   const opt = document.createElement("option");
@@ -918,9 +834,15 @@ document.getElementById("autoSelect").addEventListener("change", (e)=>{
   clearAutoTimer();
 });
 
+/* ✅ Voice switch */
+document.getElementById("voiceSelect").addEventListener("change", (e)=>{
+  voiceGender = e.target.value || "female";
+});
+
+/* 題庫視窗 */
 const configOverlay = document.getElementById("configOverlay");
 document.getElementById("btnConfig").onclick = ()=>{
-  document.getElementById("wordInput").value = MASTER_WORDS.join(", ");
+  document.getElementById("wordInput").value = MASTER_WORDS.join("\n");
   updateBankCount();
   configOverlay.style.display = "flex";
 };
@@ -929,30 +851,27 @@ document.getElementById("btnCancel").onclick = ()=>{
 };
 document.getElementById("btnClear").onclick = ()=>{
   MASTER_WORDS = [];
-  selectedCategory = "";
-  categoryMode = "fixed";
-  document.getElementById("categorySelect").value = "";
-  document.getElementById("catModeSelect").value = "fixed";
-  applyCategoryUIState();
   updateBankCount();
   document.getElementById("wordInput").value = "";
 };
+
 document.getElementById("btnApply").onclick = ()=>{
   const raw = document.getElementById("wordInput").value || "";
-  const words = raw.split(/[\n,\t ]+/).map(s=>s.trim()).filter(Boolean);
-  const clean = uniq(words);
+
+  // ✅ IMPORTANT: phrases supported — keep spaces
+  // Input format: one item per line OR comma-separated
+  const items = raw
+    .split(/\n|,/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const clean = uniq(items);
+
   if(clean.length < OPTIONS_PER_QUESTION){
-    alert(`請至少輸入 ${OPTIONS_PER_QUESTION} 個單字`);
+    alert(`請至少輸入 ${OPTIONS_PER_QUESTION} 個單字/片語`);
     return;
   }
   MASTER_WORDS = clean;
-  // 套用自訂題庫時，回到「固定分類 / 自訂」
-  selectedCategory = "";
-  categoryMode = "fixed";
-  document.getElementById("categorySelect").value = "";
-  document.getElementById("catModeSelect").value = "fixed";
-  applyCategoryUIState();
-
   teamScores = [0,0,0,0,0];
   configOverlay.style.display = "none";
   initGame();
@@ -966,15 +885,12 @@ document.getElementById("btnRestart").onclick = ()=>{
   initGame();
 };
 
-applyCategoryUIState();
 updateBankCount();
 initGame();
 </script>
 
-
 <script>
 /* ====== 只停用右鍵（不偵測 DevTools） ====== */
-// 停用右鍵選單（滑鼠右鍵 / 手機長按）
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();
   return false;
@@ -983,5 +899,3 @@ document.addEventListener('contextmenu', (e) => {
 
 </body>
 </html>
-
-
