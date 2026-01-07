@@ -369,7 +369,22 @@ body{
       <select id="roundSelect"></select>
     </div>
 
-    <div class="pill" title="自動下一題條件">
+
+    <div class="pill" title="選擇單字分類">
+      <label for="categorySelect">分類</label>
+      <select id="categorySelect">
+        <option value="">自訂 / 預設</option>
+      </select>
+    </div>
+
+    <div class="pill" title="題目分類方式">
+      <label for="catModeSelect">模式</label>
+      <select id="catModeSelect">
+        <option value="fixed" selected>固定分類</option>
+        <option value="random">分類隨機</option>
+      </select>
+    </div>
+<div class="pill" title="自動下一題條件">
       <label for="autoSelect">自動</label>
       <select id="autoSelect">
         <option value="off">關閉</option>
@@ -431,10 +446,33 @@ let TOTAL_QUESTIONS = 4;
 const OPTIONS_PER_QUESTION = 4;
 const RACE_POINTS = [10, 8, 6, 4, 2]; 
 const AUTO_DELAY_MS = 1500; // 延遲長一點點讓大家看到讚
+const RANDOM_PICK_COUNT = 40; // 分類隨機時抽取的單字數
+let randomPickedWords = [];
 
 /* ================== 題庫 ================== */
+
+/* ================== 分類單字庫 ================== */
+const WORD_CATEGORIES = {
+  "Fruits": ["Apple","Banana","Orange","Grape","Strawberry","Watermelon","Papaya","Mango","Lemon","Peach","Cherry","Pear","Pineapple","Kiwi","Guava","Tomato"],
+  "Body Parts": ["Head","Hair","Eye","Ear","Nose","Mouth","Tooth","Face","Neck","Shoulder","Arm","Hand","Finger","Leg","Knee","Foot","Toe","Body"],
+  "Clothes": ["T-shirt","Shirt","Coat","Jacket","Sweater","Dress","Skirt","Pants","Shorts","Jeans","Hat","Socks","Shoes","Gloves","Scarf","Umbrella"],
+  "Weather": ["Sunny","Cloudy","Rainy","Snowy","Windy","Hot","Cold","Warm","Cool","Rain","Sun","Cloud","Sky","Rainbow","Storm","Foggy"],
+  "Food & Drinks": ["Rice","Bread","Noodles","Egg","Milk","Juice","Water","Tea","Cake","Cookie","Candy","Pizza","Hamburger","Sandwich","Chicken","Fish","Beef","Soup"],
+  "Colors": ["Red","Blue","Yellow","Green","Orange","Purple","Pink","Black","White","Gray","Brown","Gold","Silver","Colorful","Dark","Light"],
+  "Daily Objects": ["Key","Wallet","Bag","Box","Mirror","Comb","Towel","Soap","Toothbrush","Bed","Table","Chair","Door","Window","Pillow"],
+  "Stationery": ["Pen","Pencil","Eraser","Ruler","Paper","Book","Notebook","Glue","Scissors","Marker","Crayon","Desk","Bag","Map","Tape"],
+  "Appliances": ["TV","Phone","Computer","Fan","Lamp","Clock","Radio","Camera","Oven","Fridge"],
+  "Accessories & More": ["Tie","Belt","Ring","Watch","Glasses","Mask","Vest","Boots","Cap","Uniform"]
+};
+
 const DEFAULT_WORDS = ["Apple","Banana","Cat","Dog","Car","Fish","Sun","Moon","Book","Bird","Lion","Milk","Tree","Water","Fire"];
+
 let MASTER_WORDS = [...DEFAULT_WORDS];
+
+/* ================== 分類狀態 ================== */
+let selectedCategory = "";
+let categoryMode = "fixed"; // fixed | random
+
 
 /* ================== 狀態 ================== */
 let teamCount = 3;
@@ -478,11 +516,19 @@ function setCols(n){
   document.getElementById("battleGround").style.setProperty("--cols", String(n));
 }
 function updateBankCount(){
-  document.getElementById("bankCount").textContent = `目前題庫：${MASTER_WORDS.length}`;
+  const el = document.getElementById("bankCount");
+  if(categoryMode === "random"){
+    const n = (randomPickedWords && randomPickedWords.length) ? randomPickedWords.length : RANDOM_PICK_COUNT;
+    el.textContent = `目前題庫：分類隨機（抽 ${n} 個）`;
+  }else{
+    el.textContent = `目前題庫：${MASTER_WORDS.length}`;
+  }
 }
 function updateRoundText(){
   const total = gameBank.length || TOTAL_QUESTIONS;
-  document.getElementById("roundText").textContent = `Round ${Math.min(currentIdx+1,total)} / ${total}`;
+  const cat = gameBank[currentIdx]?.category;
+  document.getElementById("roundText").textContent =
+    `Round ${Math.min(currentIdx+1,total)} / ${total}` + (cat ? ` · ${cat}` : "");
 }
 function lockTeam(teamIdx){
   const list = document.getElementById(`list-${teamIdx}`);
@@ -525,6 +571,24 @@ function speak(text){
 
 /* ================== 建題 ================== */
 function buildGameBank(){
+  // === 分類隨機模式：先從所有分類合併後，隨機抽出固定題庫（預設 40 個）===
+  if(categoryMode === "random"){
+    let all = [];
+    Object.values(WORD_CATEGORIES || {}).forEach(arr=>{
+      all.push(...(arr || []));
+    });
+    all = uniq(all);
+
+    if(all.length < OPTIONS_PER_QUESTION){
+      alert(`分類題庫不足 ${OPTIONS_PER_QUESTION} 個單字，請先補充分類內容。`);
+      return false;
+    }
+
+    randomPickedWords = shuffle([...all]).slice(0, Math.min(RANDOM_PICK_COUNT, all.length));
+    MASTER_WORDS = [...randomPickedWords];
+  }
+
+  // === 固定分類 / 自訂題庫模式：沿用 MASTER_WORDS ===
   MASTER_WORDS = uniq(MASTER_WORDS);
   if(MASTER_WORDS.length < OPTIONS_PER_QUESTION){
     alert(`題庫不足 ${OPTIONS_PER_QUESTION} 個單字，請在題庫加入更多單字。`);
@@ -537,11 +601,12 @@ function buildGameBank(){
   }
   shuffle(answers);
 
+  const catLabel = selectedCategory ? selectedCategory : "自訂";
   gameBank = answers.map(ans=>{
     const others = MASTER_WORDS.filter(w => w.toLowerCase() !== ans.toLowerCase());
     shuffle(others);
     const options = shuffle([ans, ...others.slice(0, OPTIONS_PER_QUESTION-1)]);
-    return { answer: ans, options };
+    return { answer: ans, options, category: catLabel };
   });
 
   shuffle(gameBank);
@@ -782,6 +847,59 @@ document.getElementById("teamSelect").addEventListener("change", (e)=>{
   updateUI();
 });
 
+/* ================== 分類選擇 / 分類隨機 ================== */
+const categorySelect = document.getElementById("categorySelect");
+const catModeSelect = document.getElementById("catModeSelect");
+
+// 建立分類選項
+(function initCategorySelect(){
+  const cats = Object.keys(WORD_CATEGORIES || {});
+  for(const cat of cats){
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    categorySelect.appendChild(opt);
+  }
+})();
+
+function applyCategoryUIState(){
+  const isRandom = (categoryMode === "random");
+  categorySelect.disabled = isRandom;
+  if(isRandom){
+    categorySelect.value = "";
+    selectedCategory = "";
+  }
+  updateBankCount();
+}
+
+// 固定分類：選到哪一類，就用那一類出題
+categorySelect.addEventListener("change", (e)=>{
+  const cat = e.target.value || "";
+  selectedCategory = cat;
+
+  if(cat && WORD_CATEGORIES[cat]){
+    MASTER_WORDS = [...WORD_CATEGORIES[cat]];
+  }else{
+    // 回到預設（或自訂）
+    MASTER_WORDS = [...DEFAULT_WORDS];
+  }
+
+  categoryMode = "fixed";
+  catModeSelect.value = "fixed";
+  applyCategoryUIState();
+
+  teamScores = [0,0,0,0,0];
+  initGame();
+});
+
+// 分類模式：固定 vs 分類隨機
+catModeSelect.addEventListener("change", (e)=>{
+  categoryMode = e.target.value || "fixed";
+  applyCategoryUIState();
+  teamScores = [0,0,0,0,0];
+  initGame();
+});
+
 const roundSelect = document.getElementById("roundSelect");
 for(let i=4;i<=20;i++){
   const opt = document.createElement("option");
@@ -811,6 +929,11 @@ document.getElementById("btnCancel").onclick = ()=>{
 };
 document.getElementById("btnClear").onclick = ()=>{
   MASTER_WORDS = [];
+  selectedCategory = "";
+  categoryMode = "fixed";
+  document.getElementById("categorySelect").value = "";
+  document.getElementById("catModeSelect").value = "fixed";
+  applyCategoryUIState();
   updateBankCount();
   document.getElementById("wordInput").value = "";
 };
@@ -823,6 +946,13 @@ document.getElementById("btnApply").onclick = ()=>{
     return;
   }
   MASTER_WORDS = clean;
+  // 套用自訂題庫時，回到「固定分類 / 自訂」
+  selectedCategory = "";
+  categoryMode = "fixed";
+  document.getElementById("categorySelect").value = "";
+  document.getElementById("catModeSelect").value = "fixed";
+  applyCategoryUIState();
+
   teamScores = [0,0,0,0,0];
   configOverlay.style.display = "none";
   initGame();
@@ -836,6 +966,7 @@ document.getElementById("btnRestart").onclick = ()=>{
   initGame();
 };
 
+applyCategoryUIState();
 updateBankCount();
 initGame();
 </script>
