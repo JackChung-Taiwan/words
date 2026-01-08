@@ -15,7 +15,6 @@
   --pop-purple:#a855f7;
   --pop-orange:#f97316;
 }
-
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body{
   margin:0;
@@ -24,48 +23,20 @@ body{
   font-family:"PingFang TC","Microsoft JhengHei",sans-serif;
   background:linear-gradient(135deg,#FFD200 0%,#F7971E 100%);
 }
-.app{
-  height:100%;
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-  gap:15px;
-}
-
+.app{ height:100%; padding:15px; display:flex; flex-direction:column; gap:15px; }
 .comic-box{
   background:#fff;
   border:4px solid var(--border-black);
   box-shadow:6px 6px 0 #000;
   border-radius:15px;
 }
+.topbar{ display:flex; gap:12px; padding:12px; align-items:center; flex-wrap:wrap; }
+.topbar-logo{ height:80px; width:auto; object-fit:contain; display:block; }
+@media (max-width:600px){ .topbar-logo{ height:60px; } }
 
-.topbar{
-  display:flex;
-  gap:12px;
-  padding:12px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-/* Logo 樣式 */
-.topbar-logo {
-  height: 80px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-}
-@media (max-width: 600px) {
-  .topbar-logo { height: 60px; }
-}
-
-/* 題目區 */
 .question-zone{
-  flex:1;
-  min-width:260px;
-  height:84px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  flex:1; min-width:260px; height:84px;
+  display:flex; align-items:center; justify-content:center;
   background:#f8fafc;
   border:4px dashed var(--border-black);
   border-radius:12px;
@@ -76,7 +47,6 @@ body{
 .word-text{ font-size:42px; font-weight:900; color:#000; }
 .listen-hint{ font-size:26px; color:#475569; font-weight:900; }
 
-/* 按鈕 */
 .comic-btn{
   background:#fff;
   border:3px solid #000;
@@ -91,67 +61,62 @@ body{
 .comic-btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 #000; }
 
 .pill{
-  display:flex;
-  align-items:center;
-  gap:8px;
+  display:flex; align-items:center; gap:8px;
   padding:8px 10px;
   border:3px solid #000;
   border-radius:999px;
   background:#fff;
   box-shadow:4px 4px 0 #000;
 }
-.pill label{ font-weight:900; font-size:16px; }
+.pill label{ font-weight:900; font-size:16px; white-space:nowrap; }
 .pill select{
-  font-size:16px;
+  font-size:14px;
   font-weight:900;
   border:2px solid #000;
   border-radius:10px;
-  padding:4px 8px;
+  padding:6px 8px;
   outline:none;
+  max-width: 320px;
 }
 
-/* 戰場 */
+.notice{
+  display:none;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border:2px solid #000;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:3px 3px 0 #000;
+  font-weight:900;
+  font-size:14px;
+  color:#111827;
+}
+
 .battle-ground{
-  flex:1;
-  min-height:0;
-  display:grid;
-  gap:15px;
+  flex:1; min-height:0;
+  display:grid; gap:15px;
   grid-template-columns: repeat(var(--cols, 3), 1fr);
 }
-.team-container{
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  min-height:0;
-}
+.team-container{ display:flex; flex-direction:column; overflow:hidden; min-height:0; }
 .team-info{
   padding:12px;
   border-bottom:4px solid #000;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:22px;
-  font-weight:900;
-  gap:8px;
-  flex-wrap:wrap;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:22px; font-weight:900;
+  gap:8px; flex-wrap:wrap;
 }
 .score-tag{
-  background:#000;
-  color:#fff;
-  padding:4px 12px;
-  border-radius:999px;
+  background:#000; color:#fff;
+  padding:4px 12px; border-radius:999px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
   font-size:18px;
 }
 
-/* 選項 */
 .options-list{
-  flex:1;
-  min-height:0;
+  flex:1; min-height:0;
   padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  display:flex; flex-direction:column; gap:10px;
   overflow:auto;
 }
 .option-item{
@@ -161,11 +126,9 @@ body{
   padding:12px 10px;
   cursor:pointer;
   transition:0.08s;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display:flex; align-items:center; justify-content:center;
   user-select:none;
-  position: relative;
+  position:relative;
 }
 .option-item:hover{ transform:scale(1.02); }
 .option-word{
@@ -173,141 +136,85 @@ body{
   font-weight:900;
   letter-spacing:0.3px;
   word-break: break-word;
-  text-align: center;
-  z-index: 1;
+  text-align:center;
+  z-index:1;
 }
 
-/* 👍 大讚 Emoji 動畫 */
-.thumb-emoji {
-  position: absolute;
-  right: 15px;
-  font-size: 45px;
-  line-height: 1;
-  z-index: 2;
+.thumb-emoji{
+  position:absolute; right:15px;
+  font-size:45px; line-height:1;
+  z-index:2;
   filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
-@keyframes popIn {
-  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-  60% { transform: scale(1.4) rotate(10deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+@keyframes popIn{
+  0%{ transform:scale(0) rotate(-45deg); opacity:0; }
+  60%{ transform:scale(1.4) rotate(10deg); opacity:1; }
+  100%{ transform:scale(1) rotate(0deg); opacity:1; }
 }
 
-.correct{
-  background: var(--pop-green) !important;
-  color:#fff !important;
-  border-color: #14532d !important;
-}
+.correct{ background:var(--pop-green)!important; color:#fff!important; border-color:#14532d!important; }
 .wrong{
-  background: var(--pop-red) !important;
-  color:#fff !important;
-  animation:shake .25s;
-  opacity: 0.6;
-  pointer-events: none;
+  background:var(--pop-red)!important; color:#fff!important;
+  animation:shake .25s; opacity:.6; pointer-events:none;
 }
-
-/* 顯示正確答案 */
 .reveal-correct{
-  border-color: var(--pop-amber) !important;
-  box-shadow: 0 0 0 4px rgba(245,158,11,.35) !important;
+  border-color:var(--pop-amber)!important;
+  box-shadow:0 0 0 4px rgba(245,158,11,.35)!important;
 }
-
-.locked{
-  opacity:0.6;
-  filter:grayscale(0.1);
-  pointer-events:none;
-}
+.locked{ opacity:.6; filter:grayscale(.1); pointer-events:none; }
 .lock-badge{
-  font-size:14px;
-  font-weight:900;
+  font-size:14px; font-weight:900;
   padding:4px 8px;
   border:2px solid #000;
   border-radius:999px;
   background:#fff;
-  white-space: nowrap;
+  white-space:nowrap;
 }
-
 @keyframes shake{
   0%,100%{ transform:translateX(0); }
   25%{ transform:translateX(-6px); }
   75%{ transform:translateX(6px); }
 }
 
-/* 彈窗 */
 .overlay{
-  position:fixed;
-  inset:0;
+  position:fixed; inset:0;
   background:rgba(0,0,0,.7);
   display:none;
-  justify-content:center;
-  align-items:center;
+  justify-content:center; align-items:center;
   z-index:50;
 }
-.modal{
-  width:min(580px, calc(100vw - 30px));
-  padding:22px;
-}
+.modal{ width:min(580px, calc(100vw - 30px)); padding:22px; }
 .modal h2{ margin:0 0 10px 0; }
 .modal .row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
   margin:10px 0 12px;
 }
 .modal textarea{
-  width:100%;
-  height:170px;
-  font-size:16px;
-  padding:10px;
-  border:3px solid #000;
-  border-radius:10px;
-  outline:none;
-  resize:both;
+  width:100%; height:170px;
+  font-size:16px; padding:10px;
+  border:3px solid #000; border-radius:10px;
+  outline:none; resize:both;
 }
 .mini{
-  font-weight:900;
-  font-size:14px;
-  color:#111827;
-  background:#fff;
-  border:2px solid #000;
-  border-radius:10px;
+  font-weight:900; font-size:14px;
+  color:#111827; background:#fff;
+  border:2px solid #000; border-radius:10px;
   padding:6px 10px;
 }
-
-/* 排行榜 */
-.podium{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  margin-top:10px;
-  max-height: 40vh;
-  overflow-y: auto;
-}
+.podium{ display:flex; flex-direction:column; gap:10px; margin-top:10px; max-height:40vh; overflow-y:auto; }
 .podium-item{
-  border:3px solid #000;
-  border-radius:14px;
+  border:3px solid #000; border-radius:14px;
   box-shadow:4px 4px 0 #000;
   padding:14px 16px;
-  font-weight:900;
-  font-size:22px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
+  font-weight:900; font-size:22px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap;
 }
-.podium-left{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
+.podium-left{ display:flex; gap:10px; align-items:center; }
 .badge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:44px;
-  height:44px;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:44px; height:44px;
   border:3px solid #000;
   border-radius:12px;
   background:#fff;
@@ -316,24 +223,16 @@ body{
 .score-big{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
   font-size:22px;
-  background:#000;
-  color:#fff;
+  background:#000; color:#fff;
   padding:6px 12px;
   border-radius:999px;
 }
-.all-scores{
-  margin-top:12px;
-  font-weight:900;
-  font-size:14px;
-  color:#334155;
-  line-height:1.6;
-}
+.all-scores{ margin-top:12px; font-weight:900; font-size:14px; color:#334155; line-height:1.6; }
 
-/* 手機適配 */
-@media (max-width: 900px){
-  .battle-ground{ grid-template-columns: 1fr !important; overflow:auto; }
+@media (max-width:900px){
+  .battle-ground{ grid-template-columns:1fr!important; overflow:auto; }
   body{ overflow:auto; }
-  .option-word{ font-size: 30px; }
+  .option-word{ font-size:30px; }
 }
 </style>
 </head>
@@ -377,14 +276,7 @@ body{
       </select>
     </div>
 
-    <!-- ✅ NEW: Voice gender switch -->
-    <div class="pill" title="Voice (en-US)">
-      <label for="voiceSelect">Voice</label>
-      <select id="voiceSelect">
-        <option value="female" selected>Female</option>
-        <option value="male">Male</option>
-      </select>
-    </div>
+    <div id="ttsNotice" class="notice" aria-live="polite"></div>
 
     <div id="roundText" class="mini" style="min-width:140px; text-align:center;">Round 1 / 4</div>
 
@@ -406,7 +298,6 @@ body{
       <button class="comic-btn" id="btnClear" style="background:#fff;">清空題庫</button>
     </div>
 
-    <!-- ✅ UPDATED placeholder: phrases supported (keep spaces) -->
     <textarea id="wordInput" placeholder="貼上單字或片語（支援空白）&#10;一行一題 或 用逗號分隔&#10;例如：&#10;ice cream&#10;take off, look forward to, Apple"></textarea>
 
     <div style="display:flex; gap:10px; margin-top:12px;">
@@ -461,20 +352,58 @@ let autoMode = "all";
 let autoTimer = null;
 let questionFinalized = false;
 
-/* ================== ✅ Voice (en-US only) ================== */
-let voiceGender = "female"; // "male" | "female"
+/* ================== ✅ FREE TTS (speechSynthesis) ================== */
 let cachedVoices = [];
+
+let noticeTimer = null;
+function showNotice(msg){
+  const el = document.getElementById("ttsNotice");
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = "inline-flex";
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(()=>{ el.style.display="none"; }, 2600);
+}
 
 function refreshVoices(){
   try{
-    cachedVoices = (speechSynthesis.getVoices() || []).filter(v => (v.lang || "").toLowerCase() === "en-us");
+    cachedVoices = speechSynthesis.getVoices() || [];
   }catch(e){
     cachedVoices = [];
   }
 }
-if ("speechSynthesis" in window) {
-  refreshVoices();
-  window.speechSynthesis.onvoiceschanged = () => refreshVoices();
+
+function pickVoice(){
+  // 自動：優先 en-US，若沒有則用任何英文
+  const voices = cachedVoices || [];
+  if(voices.length === 0) return null;
+
+  const english = voices.filter(v => ((v.lang||"").toLowerCase().startsWith("en")));
+  if(english.length === 0) return null;
+
+  const enus = english.filter(v => ((v.lang||"").toLowerCase() === "en-us"));
+  return (enus[0] || english[0] || null);
+}
+
+function speak(text){
+  if(!window.speechSynthesis){ showNotice("⚠️ 此瀏覽器不支援免費TTS"); return; }
+  window.speechSynthesis.cancel();
+
+  const target = (text ?? gameBank[currentIdx]?.answer ?? "").toString().trim();
+  if(!target) return;
+
+  if((cachedVoices||[]).length === 0) refreshVoices();
+
+  const u = new SpeechSynthesisUtterance(target);
+  u.lang = "en-US";   // 盡量美式
+  // 不顯示 Rate UI：維持系統預設 rate/pitch
+  // u.rate = 1.0;
+  // u.pitch = 1.0;
+
+  const v = pickVoice();
+  if(v) u.voice = v;
+
+  speechSynthesis.speak(u);
 }
 
 /* ================== 工具 ================== */
@@ -532,43 +461,6 @@ function clearLocks(){
 }
 function clearAutoTimer(){
   if(autoTimer){ clearTimeout(autoTimer); autoTimer = null; }
-}
-
-/* ================== ✅ 語音：只用 en-US + 可切換男/女 ================== */
-function pickVoice(){
-  // Ensure voices available
-  if(!cachedVoices || cachedVoices.length === 0) refreshVoices();
-  const voices = cachedVoices || [];
-  if(voices.length === 0) return null;
-
-  // Heuristic name matching; different browsers expose different voice names
-  const maleHint = /male|man|alex|fred|daniel|david/i;
-  const femaleHint = /female|woman|samantha|victoria|karen|zira|tessa|moira/i;
-
-  let v = null;
-  if(voiceGender === "male"){
-    v = voices.find(x => maleHint.test(x.name || "")) || voices.find(x => !femaleHint.test(x.name || ""));
-  }else{
-    v = voices.find(x => femaleHint.test(x.name || "")) || voices.find(x => !maleHint.test(x.name || ""));
-  }
-  return v || voices[0] || null;
-}
-
-function speak(text){
-  if(!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-
-  const target = (text ?? gameBank[currentIdx]?.answer ?? "").toString().trim();
-  if(!target) return;
-
-  const u = new SpeechSynthesisUtterance(target);
-  u.lang = "en-US"; // ✅ en-US only
-  u.rate = 0.9;
-
-  const v = pickVoice();
-  if(v) u.voice = v;
-
-  speechSynthesis.speak(u);
 }
 
 /* ================== 建題 ================== */
@@ -759,7 +651,7 @@ function updateUI(){
   speak();
 }
 
-/* ================== 作答邏輯（維持原邏輯） ================== */
+/* ================== 作答邏輯 ================== */
 function checkAnswer(teamIdx, pick, ans, el){
   if(gameEnded) return;
   if(answeredTeams.has(teamIdx)) return;
@@ -834,11 +726,6 @@ document.getElementById("autoSelect").addEventListener("change", (e)=>{
   clearAutoTimer();
 });
 
-/* ✅ Voice switch */
-document.getElementById("voiceSelect").addEventListener("change", (e)=>{
-  voiceGender = e.target.value || "female";
-});
-
 /* 題庫視窗 */
 const configOverlay = document.getElementById("configOverlay");
 document.getElementById("btnConfig").onclick = ()=>{
@@ -846,25 +733,15 @@ document.getElementById("btnConfig").onclick = ()=>{
   updateBankCount();
   configOverlay.style.display = "flex";
 };
-document.getElementById("btnCancel").onclick = ()=>{
-  configOverlay.style.display = "none";
-};
+document.getElementById("btnCancel").onclick = ()=>{ configOverlay.style.display = "none"; };
 document.getElementById("btnClear").onclick = ()=>{
   MASTER_WORDS = [];
   updateBankCount();
   document.getElementById("wordInput").value = "";
 };
-
 document.getElementById("btnApply").onclick = ()=>{
   const raw = document.getElementById("wordInput").value || "";
-
-  // ✅ IMPORTANT: phrases supported — keep spaces
-  // Input format: one item per line OR comma-separated
-  const items = raw
-    .split(/\n|,/)
-    .map(s => s.trim())
-    .filter(Boolean);
-
+  const items = raw.split(/\n|,/).map(s=>s.trim()).filter(Boolean);
   const clean = uniq(items);
 
   if(clean.length < OPTIONS_PER_QUESTION){
@@ -885,16 +762,21 @@ document.getElementById("btnRestart").onclick = ()=>{
   initGame();
 };
 
+/* ✅ voices load */
+if("speechSynthesis" in window){
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = () => refreshVoices();
+}else{
+  showNotice("⚠️ 此瀏覽器不支援免費TTS（speechSynthesis）");
+}
+
 updateBankCount();
 initGame();
 </script>
 
 <script>
 /* ====== 只停用右鍵（不偵測 DevTools） ====== */
-document.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  return false;
-});
+document.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
 </script>
 
 </body>
