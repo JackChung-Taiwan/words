@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>聽力對戰遊戲</title>
+<title>聽力對戰遊戲 (記憶版)</title>
 
 <style>
 :root{
@@ -241,7 +241,7 @@ body{
 <div class="app">
 
   <div class="comic-box topbar">
-    <img src="image_0.png" alt="KEAT Logo" class="topbar-logo">
+    <img src="image_0.png" alt="KEAT Logo" class="topbar-logo" onerror="this.style.display='none'">
 
     <div class="question-zone" id="btnSpeak" title="播放發音">
       <div id="displayArea" class="listen-hint">播放發音</div>
@@ -293,20 +293,23 @@ body{
   <div class="comic-box modal">
     <h2>題庫設定</h2>
 
-    <div class="row">
+    <div class="row" style="justify-content: space-between;">
       <div class="mini" id="bankCount">目前題庫：0</div>
-      <button class="comic-btn" id="btnClear" style="background:#fff;">清空題庫</button>
+      <div style="display:flex; gap:8px;">
+         <button class="comic-btn" id="btnDownload" style="background:#fcd34d; font-size:14px; padding:6px 12px;">⬇ 備份(HTML)</button>
+         <button class="comic-btn" id="btnClear" style="background:#fff; font-size:14px; padding:6px 12px;">清空</button>
+      </div>
     </div>
 
-    <textarea id="wordInput" placeholder="貼上單字或片語（支援空白）&#10;一行一題 或 用逗號分隔&#10;例如：&#10;ice cream&#10;take off, look forward to, Apple"></textarea>
+    <textarea id="wordInput" placeholder="貼上單字或片語 &#10;一行一題 或 用逗號分隔&#10;例如：&#10;ice cream&#10;take off, look forward to, Apple"></textarea>
 
     <div style="display:flex; gap:10px; margin-top:12px;">
-      <button class="comic-btn" id="btnApply" style="flex:1; background:var(--pop-blue); color:#fff;">套用（覆蓋舊題庫）</button>
+      <button class="comic-btn" id="btnApply" style="flex:1; background:var(--pop-blue); color:#fff;">儲存並套用</button>
       <button class="comic-btn" id="btnCancel" style="flex:1;">關閉</button>
     </div>
 
     <div style="margin-top:10px; font-size:14px; font-weight:900; color:#334155;">
-      規則：答對者依序獲得 +10、+8、+6、+4、+2 <br>
+      提示：系統會自動記錄您最後一次套用的題庫。<br>
       <span style="color:#22c55e;">選錯不扣分，修正後選對依然有分！</span>
     </div>
   </div>
@@ -331,6 +334,7 @@ let TOTAL_QUESTIONS = 4;
 const OPTIONS_PER_QUESTION = 4;
 const RACE_POINTS = [10, 8, 6, 4, 2];
 const AUTO_DELAY_MS = 1500;
+const STORAGE_KEY = "keat_battle_words"; // 定義 LocalStorage Key
 
 /* ================== 題庫 ================== */
 const DEFAULT_WORDS = ["Apple","Banana","Cat","Dog","Car","Fish","Sun","Moon","Book","Bird","Lion","Milk","Tree","Water","Fire"];
@@ -374,13 +378,10 @@ function refreshVoices(){
 }
 
 function pickVoice(){
-  // 自動：優先 en-US，若沒有則用任何英文
   const voices = cachedVoices || [];
   if(voices.length === 0) return null;
-
   const english = voices.filter(v => ((v.lang||"").toLowerCase().startsWith("en")));
   if(english.length === 0) return null;
-
   const enus = english.filter(v => ((v.lang||"").toLowerCase() === "en-us"));
   return (enus[0] || english[0] || null);
 }
@@ -395,14 +396,9 @@ function speak(text){
   if((cachedVoices||[]).length === 0) refreshVoices();
 
   const u = new SpeechSynthesisUtterance(target);
-  u.lang = "en-US";   // 盡量美式
-  // 不顯示 Rate UI：維持系統預設 rate/pitch
-  // u.rate = 1.0;
-  // u.pitch = 1.0;
-
+  u.lang = "en-US";
   const v = pickVoice();
   if(v) u.voice = v;
-
   speechSynthesis.speak(u);
 }
 
@@ -461,6 +457,59 @@ function clearLocks(){
 }
 function clearAutoTimer(){
   if(autoTimer){ clearTimeout(autoTimer); autoTimer = null; }
+}
+
+/* ================== Storage & Backup ================== */
+function loadFromStorage(){
+  try{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed) && parsed.length > 0){
+        MASTER_WORDS = parsed;
+      }
+    }
+  }catch(e){ console.error("Load storage failed", e); }
+}
+
+function saveToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(MASTER_WORDS));
+  }catch(e){ console.error("Save storage failed", e); }
+}
+
+function downloadCurrentState(){
+  // 1. 產生檔名
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  const h = String(now.getHours()).padStart(2,'0');
+  const min = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const fileName = `${y}${m}${d}_${h}${min}${s}.html`;
+
+  // 2. 獲取當前網頁 HTML
+  let htmlContent = document.documentElement.outerHTML;
+
+  // 3. 將當前的 MASTER_WORDS 寫入到 HTML 中的 DEFAULT_WORDS
+  // 這樣下載後的檔案，在別台電腦打開時，預設就是這組字
+  const jsonWords = JSON.stringify(MASTER_WORDS);
+  // 使用正規表達式替換掉原本的 const DEFAULT_WORDS = [...]
+  // 注意：這裡假設原始碼中格式大致不變
+  const regex = /const DEFAULT_WORDS\s*=\s*\[.*?\];/s;
+  htmlContent = htmlContent.replace(regex, `const DEFAULT_WORDS = ${jsonWords};`);
+
+  // 4. 建立下載連結
+  const blob = new Blob([htmlContent], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /* ================== 建題 ================== */
@@ -579,6 +628,9 @@ function showResults(){
 }
 
 function initGame(){
+  // 先嘗試從 Storage 讀取
+  loadFromStorage();
+  
   if(!buildGameBank()) return;
   currentIdx = 0;
   isShowWord = false;
@@ -739,6 +791,12 @@ document.getElementById("btnClear").onclick = ()=>{
   updateBankCount();
   document.getElementById("wordInput").value = "";
 };
+
+/* ⬇️ 下載按鈕事件 */
+document.getElementById("btnDownload").onclick = ()=>{
+  downloadCurrentState();
+};
+
 document.getElementById("btnApply").onclick = ()=>{
   const raw = document.getElementById("wordInput").value || "";
   const items = raw.split(/\n|,/).map(s=>s.trim()).filter(Boolean);
@@ -750,6 +808,9 @@ document.getElementById("btnApply").onclick = ()=>{
   }
   MASTER_WORDS = clean;
   teamScores = [0,0,0,0,0];
+  
+  saveToStorage(); // 儲存到 localStorage
+
   configOverlay.style.display = "none";
   initGame();
 };
@@ -770,7 +831,7 @@ if("speechSynthesis" in window){
   showNotice("⚠️ 此瀏覽器不支援免費TTS（speechSynthesis）");
 }
 
-updateBankCount();
+/* 移除原本最後的 updateBankCount(); initGame(); 由 loadFromStorage 觸發 */
 initGame();
 </script>
 
